@@ -1,0 +1,9 @@
+{
+  "name": "generator-analisa-ide",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generator analisa ide perbaikan (Kaizen/CI) bertenaga Gemini, dengan backend aman.",
+  "engines": {
+    "node": ">=18"
+  }
+}
