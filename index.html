@@ -324,6 +324,10 @@ function buildPlainText(r, form){
   L.push("Jabatan      : "+form.jabatan);
   L.push("Level Penilai: "+form.level);
   L.push("Tanggal      : "+todayID());
+  if(form.analisaAktual){
+    L.push("");
+    L.push("ANALISA AKTUAL (INPUT)\n"+form.analisaAktual);
+  }
   L.push("");
   L.push("1. TEMA / JUDUL PROJECT\n"+(r.judul||"-"));
   L.push("");
@@ -438,6 +442,7 @@ function Section({ num, title, Icon, children }){
 function App(){
   const [jabatan,setJabatan]=useState("");
   const [temuanProblem,setTemuan]=useState("");
+  const [analisaAktual,setAnalisaAktual]=useState("");
   const [idePerbaikan,setIde]=useState("");
   const [level,setLevel]=useState("Section");
   const [password,setPassword]=useState(()=>{ try{return localStorage.getItem("ai_pwd")||"";}catch{return"";} });
@@ -449,7 +454,7 @@ function App(){
   const resultRef=useRef(null);
 
   const ready=jabatan.trim()&&temuanProblem.trim()&&idePerbaikan.trim();
-  const form={jabatan,temuanProblem,idePerbaikan,level};
+  const form={jabatan,temuanProblem,analisaAktual,idePerbaikan,level};
 
   async function handleGenerate(){
     if(!ready||loading) return;
@@ -458,7 +463,7 @@ function App(){
       const res=await fetch("/api/generate",{
         method:"POST",
         headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({jabatan,temuanProblem,idePerbaikan,level,password}),
+        body:JSON.stringify({jabatan,temuanProblem,analisaAktual,idePerbaikan,level,password}),
       });
       const data=await res.json().catch(()=>({}));
       if(res.status===401){
@@ -533,13 +538,19 @@ function App(){
           </div>
 
           <div className="ag-field">
-            <label className="ag-label"><span className="n">03</span> Ide Perbaikan</label>
+            <label className="ag-label"><span className="n">03</span> Analisa Masalah <span style={{fontFamily:"var(--serif)",fontSize:11,fontStyle:"italic",textTransform:"none",letterSpacing:0,color:"var(--ink-3)",fontWeight:400}}>(berdasarkan actual condition)</span></label>
+            <textarea className="ag-textarea" value={analisaAktual} onChange={(e)=>setAnalisaAktual(e.target.value)}
+              placeholder="Uraikan kondisi aktual di lapangan: data pengukuran, frekuensi kejadian, dampak yang sudah terjadi, faktor penyebab yang Anda amati secara langsung. cth: Dari pengamatan selama 2 minggu, proses setting jig dilakukan ±12x/shift dengan rata-rata waktu 4,5 menit/setting. Kesalahan setting menyebabkan 3–5 part reject/hari (scrap rate ~2,1%). Penyebab utama: tidak ada stopper referensi posisi dan operator berbeda-beda cara settingnya…" />
+          </div>
+
+          <div className="ag-field">
+            <label className="ag-label"><span className="n">04</span> Ide Perbaikan</label>
             <textarea className="ag-textarea" value={idePerbaikan} onChange={(e)=>setIde(e.target.value)}
               placeholder="Jelaskan ide perbaikan yang Anda usulkan. cth: Membuat jig fixture dengan stopper presisi + pokayoke sensor agar setting cukup sekali pasang…" />
           </div>
 
           <div className="ag-field">
-            <label className="ag-label"><span className="n">04</span> Level Assessment</label>
+            <label className="ag-label"><span className="n">05</span> Level Assessment</label>
             <div className="ag-seg">
               {LEVELS.map((lv)=>(
                 <button key={lv.id} className={"ag-seg-btn"+(level===lv.id?" active":"")} onClick={()=>setLevel(lv.id)}>{lv.label}</button>
@@ -561,7 +572,7 @@ function App(){
             {loading ? (<><ILoader className="ag-spin" size={18}/> Menganalisa…</>) : (<><ISpark size={18}/> Generate Analisa Ide</>)}
           </button>
           <div className="ag-hint">
-            {ready ? "AI (Gemini) akan menyusun analisa lengkap dalam Bahasa Indonesia yang natural." : "Lengkapi jabatan, temuan problem, dan ide perbaikan terlebih dulu."}
+            {ready ? "AI (Gemini) akan menyusun analisa lengkap dalam Bahasa Indonesia yang natural." : "Lengkapi jabatan, temuan problem, dan ide perbaikan terlebih dulu. Analisa aktual bersifat opsional namun membuat hasil lebih tajam."}
           </div>
 
           {error && (
@@ -578,6 +589,7 @@ function App(){
                 <span className="ag-meta-item"><IBrief size={12}/> <b>{form.jabatan}</b></span>
                 <span className="ag-meta-item"><IAward size={12}/> Level: <b>{form.level}</b></span>
                 <span className="ag-meta-item"><IFile size={12}/> {todayID()}</span>
+                {form.analisaAktual && <span className="ag-meta-item"><ISearch size={12}/> Analisa aktual: <b>✓ disertakan</b></span>}
               </div>
             </div>
 
